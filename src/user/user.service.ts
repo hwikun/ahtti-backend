@@ -47,7 +47,10 @@ export class UserService {
 
   async login({ username, password }: LoginInput): Promise<LoginOutput> {
     try {
-      const user = await this.users.findOneBy({ username });
+      const user = await this.users.findOne({
+        where: { username },
+        select: ['id', 'password'],
+      });
       if (!user) {
         throw new Error();
       }
@@ -59,6 +62,7 @@ export class UserService {
         };
       }
       const token = this.jwtService.sign(user.id);
+      console.log(token);
       return {
         ok: true,
         token,
@@ -69,5 +73,9 @@ export class UserService {
         error: 'Could not login',
       };
     }
+  }
+
+  async findById(id: number): Promise<User> {
+    return this.users.findOneBy({ id });
   }
 }
