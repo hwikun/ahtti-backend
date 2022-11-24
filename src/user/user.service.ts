@@ -1,8 +1,10 @@
+import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { CreateUserInput, CreateUserOutput } from './dtos/create-user.dto';
-import { User } from './entities/user.entity';
+import { SALT, User } from './entities/user.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -38,6 +40,32 @@ export class UserService {
       return {
         ok: false,
         error: 'Could not create account',
+      };
+    }
+  }
+
+  async login({ username, password }: LoginInput): Promise<LoginOutput> {
+    try {
+      const user = await this.users.findOneBy({ username });
+      if (!user) {
+        throw new Error();
+      }
+      const passwordCorrect = await user.checkPassword(password);
+      if (!passwordCorrect) {
+        return {
+          ok: false,
+          error: 'Password is incorrect',
+        };
+      }
+      const token = 'aaa';
+      return {
+        ok: true,
+        token,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: 'Could not login',
       };
     }
   }

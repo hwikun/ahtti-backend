@@ -17,7 +17,7 @@ import {
 import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 
-const salt = bcrypt.genSaltSync(10);
+export const SALT = bcrypt.genSaltSync(10);
 
 export enum UserRole {
   Admin = 'Admin',
@@ -31,12 +31,12 @@ registerEnumType(UserRole, { name: 'UserRole' });
 @Entity()
 export class User extends CoreEntity {
   @Field((type) => String)
-  @Column()
+  @Column({ select: false })
   @IsEmail()
   email: string;
 
   @Field((type) => String)
-  @Column()
+  @Column({ select: false })
   @IsString()
   @MinLength(8)
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
@@ -60,19 +60,16 @@ export class User extends CoreEntity {
   @BeforeUpdate()
   async hashPassword(): Promise<void> {
     try {
-      this.password = await bcrypt.hash(this.password, salt);
+      this.password = await bcrypt.hash(this.password, SALT);
     } catch (err) {
       console.log(err);
       throw new InternalServerErrorException();
     }
   }
-
-  @BeforeInsert()
-  @BeforeUpdate()
-  async hashEmail(): Promise<void> {
+  async checkPassword(aPassword: string): Promise<boolean> {
     try {
-      this.email = await bcrypt.hash(this.email, salt);
-      console.log(this.email);
+      const ok = await bcrypt.compare(aPassword, this.password);
+      return ok;
     } catch (err) {
       console.log(err);
       throw new InternalServerErrorException();
