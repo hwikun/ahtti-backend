@@ -1,15 +1,16 @@
+import { JwtService } from './../jwt/jwt.service';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { CreateUserInput, CreateUserOutput } from './dtos/create-user.dto';
-import { SALT, User } from './entities/user.entity';
+import { User } from './entities/user.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async createUser({
@@ -57,7 +58,7 @@ export class UserService {
           error: 'Password is incorrect',
         };
       }
-      const token = 'aaa';
+      const token = this.jwtService.sign(user.id);
       return {
         ok: true,
         token,

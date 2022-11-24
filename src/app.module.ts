@@ -8,6 +8,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { UserModule } from './user/user.module';
 import { User } from './user/entities/user.entity';
+import { JwtModule } from './jwt/jwt.module';
 
 @Module({
   imports: [
@@ -43,6 +44,9 @@ import { User } from './user/entities/user.entity';
       driver: ApolloDriver,
       autoSchemaFile: true,
       context: ({ req }) => ({ user: req['user'] }),
+    }),
+    JwtModule.forRoot({
+      privateKey: process.env.PRIVATE_KEY,
     }),
     UserModule,
   ],
