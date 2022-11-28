@@ -1,3 +1,5 @@
+import { ConfigService } from '@nestjs/config';
+import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 import { JwtService } from './../jwt/jwt.service';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { CreateUserInput, CreateUserOutput } from './dtos/create-user.dto';
@@ -5,7 +7,6 @@ import { User } from './entities/user.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-
 @Injectable()
 export class UserService {
   constructor(
@@ -45,10 +46,11 @@ export class UserService {
     }
   }
 
-  async login({ username, password }: LoginInput): Promise<LoginOutput> {
+  async login({ email, password }: LoginInput): Promise<LoginOutput> {
     try {
+      const hashedEmail = await this.jwtService.hash(email);
       const user = await this.users.findOne({
-        where: { username },
+        where: { email: hashedEmail },
         select: ['id', 'password'],
       });
       if (!user) {
@@ -62,7 +64,6 @@ export class UserService {
         };
       }
       const token = this.jwtService.sign(user.id);
-      console.log(token);
       return {
         ok: true,
         token,
@@ -77,5 +78,23 @@ export class UserService {
 
   async findById(id: number): Promise<User> {
     return this.users.findOneBy({ id });
+  }
+
+  async userProfile({ userId }: UserProfileInput): Promise<UserProfileOutput> {
+    try {
+      const user = await this.findById(userId);
+      if (!user) {
+        throw new Error();
+      }
+      return {
+        ok: true,
+        user,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'User not found',
+      };
+    }
   }
 }
