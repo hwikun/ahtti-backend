@@ -1,4 +1,3 @@
-import { ConfigService } from '@nestjs/config';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 import { JwtService } from './../jwt/jwt.service';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
@@ -7,6 +6,8 @@ import { User } from './entities/user.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email.dto';
+import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UserService {
   constructor(
@@ -46,11 +47,10 @@ export class UserService {
     }
   }
 
-  async login({ email, password }: LoginInput): Promise<LoginOutput> {
+  async login({ username, password }: LoginInput): Promise<LoginOutput> {
     try {
-      const hashedEmail = await this.jwtService.hash(email);
       const user = await this.users.findOne({
-        where: { email: hashedEmail },
+        where: { username },
         select: ['id', 'password'],
       });
       if (!user) {
@@ -94,6 +94,50 @@ export class UserService {
       return {
         ok: false,
         error: 'User not found',
+      };
+    }
+  }
+
+  /** 이메일 해시화 확인함수(임시)
+   * @param  {User} authUser
+   * @param  {VerifyEmailInput} {email}
+   * @returns Promise
+   */
+  async verifyEmail(
+    authUser: User,
+    { email }: VerifyEmailInput,
+  ): Promise<VerifyEmailOutput> {
+    try {
+      const users = await this.users.find(); // typeORM select * from users
+      const user = users.find(
+        async (user) => (await bcrypt.compare(email, user.email)) === true,
+      ); // in array, find user matched email with hash, result { all of users }
+
+      // const user = await this.users.findOne({
+      //   where: { id: authUser.id },
+      //   select: ['id', 'email'],
+      // });
+      // if (!user) {
+      //   return {
+      //     ok: false,
+      //     error: 'Could not found account',
+      //   };
+      // }
+      // const ok = await bcrypt.compare(email, user.email);
+      // if (!ok) {
+      //   return {
+      //     ok,
+      //     error: 'email does not match',
+      //   };
+      // }
+      return {
+        ok: true,
+        user,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Could not verify email',
       };
     }
   }

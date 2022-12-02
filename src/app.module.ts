@@ -31,6 +31,7 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
         MAILGUN_API_KEY: Joi.string().required(),
         MAILGUN_DOMAIN_NAME: Joi.string().required(),
         MAILGUN_FROM_EMAIL: Joi.string().required(),
+        SALT: Joi.string().required(),
       }),
     }),
     TypeOrmModule.forRoot({
@@ -51,6 +52,7 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
     }),
     JwtModule.forRoot({
       privateKey: process.env.PRIVATE_KEY,
+      SALT: process.env.SALT,
     }),
     UserModule,
   ],

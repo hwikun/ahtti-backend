@@ -7,6 +7,7 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { AuthUser } from 'src/auth/auth.decorator';
+import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email.dto';
 
 @Resolver()
 export class UserResolver {
@@ -35,5 +36,13 @@ export class UserResolver {
     @Args() userProfileInput: UserProfileInput,
   ): Promise<UserProfileOutput> {
     return this.userService.userProfile(userProfileInput);
+  }
+
+  @Query((returns) => VerifyEmailOutput)
+  verifyEmail(
+    @AuthUser() authUser: User,
+    @Args('input') verifyEmailInput: VerifyEmailInput,
+  ): Promise<VerifyEmailOutput> {
+    return this.userService.verifyEmail(authUser, verifyEmailInput);
   }
 }

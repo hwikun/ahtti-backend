@@ -2,6 +2,7 @@ import { JwtModuleOptions } from './jwt.interface';
 import { CONFIG_OPTIONS } from './../common/common.constants';
 import { Inject, Injectable } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class JwtService {
@@ -15,5 +16,9 @@ export class JwtService {
 
   verify(token: string) {
     return jwt.verify(token, this.options.privateKey);
+  }
+
+  hash(aString: string): Promise<string> {
+    return bcrypt.hash(aString, 10);
   }
 }

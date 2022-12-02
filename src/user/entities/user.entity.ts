@@ -1,3 +1,5 @@
+import { JwtService } from './../../jwt/jwt.service';
+import { ConfigService } from '@nestjs/config';
 import { CoreEntity } from './../../common/entities/core.entity';
 import {
   Field,
@@ -17,8 +19,6 @@ import {
 import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 
-export const SALT = bcrypt.genSaltSync(10);
-
 export enum UserRole {
   Admin = 'Admin',
   Member = 'Member',
@@ -30,6 +30,9 @@ registerEnumType(UserRole, { name: 'UserRole' });
 @ObjectType()
 @Entity()
 export class User extends CoreEntity {
+  constructor() {
+    super();
+  }
   @Field((type) => String)
   @Column({ select: false })
   @IsEmail()
@@ -59,16 +62,43 @@ export class User extends CoreEntity {
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword(): Promise<void> {
+    if (this.password) {
+      try {
+        this.password = await bcrypt.hash(this.password, 10);
+      } catch (err) {
+        console.log(err);
+        throw new InternalServerErrorException();
+      }
+    }
+  }
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  async hashEmail(): Promise<void> {
+    if (this.email) {
+      try {
+        this.email = await bcrypt.hash(this.email, 10);
+        console.log(this.email);
+      } catch (err) {
+        console.log(err);
+        throw new InternalServerErrorException();
+      }
+    }
+  }
+
+  async checkPassword(password: string): Promise<boolean> {
     try {
-      this.password = await bcrypt.hash(this.password, SALT);
+      const ok = await bcrypt.compare(password, this.password);
+      return ok;
     } catch (err) {
       console.log(err);
       throw new InternalServerErrorException();
     }
   }
-  async checkPassword(aPassword: string): Promise<boolean> {
+
+  async checkEmail(email: string): Promise<boolean> {
     try {
-      const ok = await bcrypt.compare(aPassword, this.password);
+      const ok = await bcrypt.compare(email, this.email);
       return ok;
     } catch (err) {
       console.log(err);
