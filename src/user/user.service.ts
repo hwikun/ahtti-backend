@@ -1,3 +1,7 @@
+import {
+  UpdateProfileInput,
+  UpdateProfileOutput,
+} from './dtos/update-profile.dto';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 import { JwtService } from './../jwt/jwt.service';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
@@ -48,12 +52,12 @@ export class UserService {
     }
   }
 
-  async login({ username, password }: LoginInput): Promise<LoginOutput> {
+  async login({ email, password }: LoginInput): Promise<LoginOutput> {
     try {
-      const user = await this.users.findOne({
-        where: { username },
-        select: ['id', 'password'],
-      });
+      const users = await this.users.find({
+        select: ['id', 'email', 'password'],
+      }); // typeORM select id, email from users
+      const user = users.find((user) => bcrypt.compareSync(email, user.email)); // in array, find user matched email with hash, result { all of users }
       if (!user) {
         throw new Error();
       }
@@ -61,7 +65,7 @@ export class UserService {
       if (!passwordCorrect) {
         return {
           ok: false,
-          error: 'Password is incorrect',
+          error: 'Password is incorrect. Please check your password.',
         };
       }
       const token = this.jwtService.sign(user.id);
@@ -104,31 +108,18 @@ export class UserService {
    * @param  {VerifyEmailInput} {email}
    * @returns Promise
    */
-  async verifyEmail(
-    authUser: User,
-    { email }: VerifyEmailInput,
-  ): Promise<VerifyEmailOutput> {
+  async verifyEmail({ email }: VerifyEmailInput): Promise<VerifyEmailOutput> {
     try {
-      const users = await this.users.find({ select: ['id', 'email'] }); // typeORM select id, email from users
+      const users = await this.users.find({
+        select: ['id', 'email'],
+      }); // typeORM select id, email from users
       const user = users.find((user) => bcrypt.compareSync(email, user.email)); // in array, find user matched email with hash, result { all of users }
-
-      // const user = await this.users.findOne({
-      //   where: { id: authUser.id },
-      //   select: ['id', 'email'],
-      // });
-      // if (!user) {
-      //   return {
-      //     ok: false,
-      //     error: 'Could not found account',
-      //   };
-      // }
-      // const ok = await bcrypt.compare(email, user.email);
-      // if (!ok) {
-      //   return {
-      //     ok,
-      //     error: 'email does not match',
-      //   };
-      // }
+      if (!user) {
+        return {
+          ok: false,
+          error: 'Could not found account',
+        };
+      }
       return {
         ok: true,
         user,
@@ -137,6 +128,55 @@ export class UserService {
       return {
         ok: false,
         error: 'Could not verify email',
+      };
+    }
+  }
+
+  async updateProfile(
+    authUser: User,
+    { email, username, password, updatePassword }: UpdateProfileInput,
+  ): Promise<UpdateProfileOutput> {
+    try {
+      if (!password) {
+        return {
+          ok: false,
+          error: 'Please enter the password',
+        };
+      }
+      const user = await this.users.findOne({
+        where: { id: authUser.id },
+        select: ['id', 'email', 'password', 'username'],
+      });
+      if (!user) {
+        return {
+          ok: false,
+          error: 'account not found',
+        };
+      }
+      const correctPassword = await user.checkPassword(password);
+      if (!correctPassword) {
+        return {
+          ok: false,
+          error: 'Please check your password',
+        };
+      }
+      if (email) {
+        user.email = email;
+      }
+      if (updatePassword) {
+        user.password = updatePassword;
+      }
+      if (username) {
+        user.username = username;
+      }
+      await this.users.save(user);
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Could not update profile',
       };
     }
   }

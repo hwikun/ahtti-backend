@@ -1,3 +1,7 @@
+import {
+  UpdateProfileOutput,
+  UpdateProfileInput,
+} from './dtos/update-profile.dto';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 import { User } from './entities/user.entity';
 import { LoginOutput, LoginInput } from './dtos/login.dto';
@@ -40,9 +44,16 @@ export class UserResolver {
 
   @Query((returns) => VerifyEmailOutput)
   verifyEmail(
-    @AuthUser() authUser: User,
     @Args('input') verifyEmailInput: VerifyEmailInput,
   ): Promise<VerifyEmailOutput> {
-    return this.userService.verifyEmail(authUser, verifyEmailInput);
+    return this.userService.verifyEmail(verifyEmailInput);
+  }
+
+  @Mutation((returns) => UpdateProfileOutput)
+  updateProfile(
+    @AuthUser() authUser: User,
+    @Args('input') updateProfileInput: UpdateProfileInput,
+  ): Promise<UpdateProfileOutput> {
+    return this.userService.updateProfile(authUser, updateProfileInput);
   }
 }

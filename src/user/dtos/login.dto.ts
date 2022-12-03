@@ -5,7 +5,7 @@ import { Field, InputType, ObjectType, PickType } from '@nestjs/graphql';
 import { IsString } from 'class-validator';
 
 @InputType()
-export class LoginInput extends PickType(User, ['password', 'username']) {}
+export class LoginInput extends PickType(User, ['password', 'email']) {}
 
 @ObjectType()
 export class LoginOutput extends CoreOutput {
