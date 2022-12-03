@@ -1,3 +1,4 @@
+import { DeleteUserOutput, DeleteUserInput } from './dtos/delete-user.dto';
 import {
   UpdateProfileOutput,
   UpdateProfileInput,
@@ -55,5 +56,13 @@ export class UserResolver {
     @Args('input') updateProfileInput: UpdateProfileInput,
   ): Promise<UpdateProfileOutput> {
     return this.userService.updateProfile(authUser, updateProfileInput);
+  }
+
+  @Mutation((returns) => DeleteUserOutput)
+  deleteUser(
+    @AuthUser() authUser: User,
+    @Args('input') deleteUserInput: DeleteUserInput,
+  ): Promise<DeleteUserOutput> {
+    return this.userService.deleteUser(authUser, deleteUserInput);
   }
 }

@@ -1,3 +1,4 @@
+import { DeleteUserOutput, DeleteUserInput } from './dtos/delete-user.dto';
 import {
   UpdateProfileInput,
   UpdateProfileOutput,
@@ -12,7 +13,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email.dto';
 import * as bcrypt from 'bcrypt';
-import { log } from 'console';
 @Injectable()
 export class UserService {
   constructor(
@@ -27,6 +27,8 @@ export class UserService {
     confirmPassword,
   }: CreateUserInput): Promise<CreateUserOutput> {
     try {
+      // username check & email checka
+
       const exists = await this.users.findOneBy({ username });
       if (exists) {
         return {
@@ -177,6 +179,36 @@ export class UserService {
       return {
         ok: false,
         error: 'Could not update profile',
+      };
+    }
+  }
+
+  async deleteUser(
+    authUser: User,
+    { userId }: DeleteUserInput,
+  ): Promise<DeleteUserOutput> {
+    try {
+      const user = await this.users.findOneBy({ id: userId });
+      if (!user) {
+        return {
+          ok: false,
+          error: 'Could not found account',
+        };
+      }
+      if (user.id !== authUser.id) {
+        return {
+          ok: false,
+          error: "You can't delete an account that you don't own",
+        };
+      }
+      await this.users.delete(userId);
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Could not delete account',
       };
     }
   }
