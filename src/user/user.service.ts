@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email.dto';
 import * as bcrypt from 'bcrypt';
+import { log } from 'console';
 @Injectable()
 export class UserService {
   constructor(
@@ -108,10 +109,8 @@ export class UserService {
     { email }: VerifyEmailInput,
   ): Promise<VerifyEmailOutput> {
     try {
-      const users = await this.users.find(); // typeORM select * from users
-      const user = users.find(
-        async (user) => (await bcrypt.compare(email, user.email)) === true,
-      ); // in array, find user matched email with hash, result { all of users }
+      const users = await this.users.find({ select: ['id', 'email'] }); // typeORM select id, email from users
+      const user = users.find((user) => bcrypt.compareSync(email, user.email)); // in array, find user matched email with hash, result { all of users }
 
       // const user = await this.users.findOne({
       //   where: { id: authUser.id },
