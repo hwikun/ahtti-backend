@@ -18,7 +18,9 @@ export class JwtService {
     return jwt.verify(token, this.options.privateKey);
   }
 
-  hash(aString: string): Promise<string> {
-    return bcrypt.hash(aString, 10);
+  hash(aString: string) {
+    return bcrypt
+      .hashSync(aString, process.env.SALT)
+      .replace(process.env.SALT, '');
   }
 }

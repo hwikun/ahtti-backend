@@ -1,12 +1,9 @@
+import { Verification } from './../entities/verification.entity';
 import { CoreOutput } from './../../common/dtos/output.dto';
-import { Field, InputType, ObjectType, PickType } from '@nestjs/graphql';
-import { User } from '../entities/user.entity';
+import { InputType, ObjectType, PickType } from '@nestjs/graphql';
 
 @InputType()
-export class VerifyEmailInput extends PickType(User, ['email']) {}
+export class VerifyEmailInput extends PickType(Verification, ['code']) {}
 
 @ObjectType()
-export class VerifyEmailOutput extends CoreOutput {
-  @Field((type) => User, { nullable: true })
-  user?: User;
-}
+export class VerifyEmailOutput extends CoreOutput {}

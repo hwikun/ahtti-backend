@@ -1,3 +1,4 @@
+import { Verification } from './entities/verification.entity';
 import { DeleteUserOutput, DeleteUserInput } from './dtos/delete-user.dto';
 import {
   UpdateProfileInput,
@@ -18,8 +19,11 @@ export class UserService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
     private readonly jwtService: JwtService,
+    @InjectRepository(Verification)
+    private readonly verifications: Repository<Verification>,
   ) {}
 
+  /** 회원가입 */
   async createUser({
     email,
     password,
@@ -27,66 +31,75 @@ export class UserService {
     confirmPassword,
   }: CreateUserInput): Promise<CreateUserOutput> {
     try {
-      // username check & email checka
-
-      const exists = await this.users.findOneBy({ username });
-      if (exists) {
-        return {
-          ok: false,
-          error: 'Account already exists',
-        };
+      // username check & email check
+      const emailExists = await this.users.findOneBy({
+        email: this.jwtService.hash(email),
+      });
+      if (emailExists) {
+        throw new Error('Email already exists');
       }
+      const usernameExists = await this.users.findOneBy({ username });
+      if (usernameExists) {
+        throw new Error('Username already exists');
+      }
+      // 패스워드 일치 확인
       if (password !== confirmPassword) {
-        return {
-          ok: false,
-          error: 'Password is not correct',
-        };
+        throw new Error('Password is not correct. Please check your password');
       }
-      await this.users.save(this.users.create({ email, password, username }));
+      const user = await this.users.save(
+        this.users.create({ email, password, username }),
+      );
+      console.log(user);
+      // DB 저장
+      await this.verifications.save(this.verifications.create({ user }));
       return {
         ok: true,
       };
-    } catch {
+    } catch (error) {
       return {
         ok: false,
-        error: 'Could not create account',
+        error: error ?? 'Could not create account',
       };
     }
   }
 
+  /** 로그인 */
   async login({ email, password }: LoginInput): Promise<LoginOutput> {
     try {
-      const users = await this.users.find({
+      // DB 조회
+      const user = await this.users.findOne({
+        where: { email: this.jwtService.hash(email) },
         select: ['id', 'email', 'password'],
-      }); // typeORM select id, email from users
-      const user = users.find((user) => bcrypt.compareSync(email, user.email)); // in array, find user matched email with hash, result { all of users }
+      });
+      console.log(user);
       if (!user) {
-        throw new Error();
+        throw new Error('Account not found');
       }
+      // 패스워드 확인
       const passwordCorrect = await user.checkPassword(password);
       if (!passwordCorrect) {
-        return {
-          ok: false,
-          error: 'Password is incorrect. Please check your password.',
-        };
+        throw new Error('Password is incorrect. Please check your password.');
       }
+      // 토큰 발급
       const token = this.jwtService.sign(user.id);
       return {
         ok: true,
         token,
       };
-    } catch {
+    } catch (error) {
       return {
         ok: false,
-        error: 'Could not login',
+        error: error ?? 'Could not login',
       };
     }
   }
 
+  /** 회원 찾기(내부용) */
   async findById(id: number): Promise<User> {
     return this.users.findOneBy({ id });
   }
 
+  /** 프로필 조회 */
   async userProfile({ userId }: UserProfileInput): Promise<UserProfileOutput> {
     try {
       const user = await this.findById(userId);
@@ -105,37 +118,9 @@ export class UserService {
     }
   }
 
-  /** 이메일 해시화 확인함수(임시)
-   * @param  {User} authUser
-   * @param  {VerifyEmailInput} {email}
-   * @returns Promise
-   */
-  async verifyEmail({ email }: VerifyEmailInput): Promise<VerifyEmailOutput> {
-    try {
-      const users = await this.users.find({
-        select: ['id', 'email'],
-      }); // typeORM select id, email from users
-      const user = users.find((user) => bcrypt.compareSync(email, user.email)); // in array, find user matched email with hash, result { all of users }
-      if (!user) {
-        return {
-          ok: false,
-          error: 'Could not found account',
-        };
-      }
-      return {
-        ok: true,
-        user,
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        error: 'Could not verify email',
-      };
-    }
-  }
-
+  /** 프로필 업데이트 */
   async updateProfile(
-    authUser: User,
+    userId: number,
     { email, username, password, updatePassword }: UpdateProfileInput,
   ): Promise<UpdateProfileOutput> {
     try {
@@ -146,7 +131,7 @@ export class UserService {
         };
       }
       const user = await this.users.findOne({
-        where: { id: authUser.id },
+        where: { id: userId },
         select: ['id', 'email', 'password', 'username'],
       });
       if (!user) {
@@ -164,6 +149,8 @@ export class UserService {
       }
       if (email) {
         user.email = email;
+        user.verified = false;
+        await this.verifications.save(this.verifications.create({ user }));
       }
       if (updatePassword) {
         user.password = updatePassword;
@@ -183,6 +170,7 @@ export class UserService {
     }
   }
 
+  /** 유저 탈퇴(삭제) */
   async deleteUser(
     authUser: User,
     { userId }: DeleteUserInput,
@@ -209,6 +197,30 @@ export class UserService {
       return {
         ok: false,
         error: 'Could not delete account',
+      };
+    }
+  }
+
+  /** 이메일 인증*/
+  async verifyEmail({ code }: VerifyEmailInput): Promise<VerifyEmailOutput> {
+    try {
+      const verification = await this.verifications.findOne({
+        where: { code },
+        relations: ['user'],
+      });
+      if (verification) {
+        verification.user.verified = true;
+        await this.users.save(verification.user);
+        await this.verifications.delete(verification.id);
+        return {
+          ok: true,
+        };
+      }
+      throw new Error();
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Could not verify email',
       };
     }
   }

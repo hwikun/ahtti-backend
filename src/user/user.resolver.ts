@@ -43,19 +43,12 @@ export class UserResolver {
     return this.userService.userProfile(userProfileInput);
   }
 
-  @Query((returns) => VerifyEmailOutput)
-  verifyEmail(
-    @Args('input') verifyEmailInput: VerifyEmailInput,
-  ): Promise<VerifyEmailOutput> {
-    return this.userService.verifyEmail(verifyEmailInput);
-  }
-
   @Mutation((returns) => UpdateProfileOutput)
   updateProfile(
     @AuthUser() authUser: User,
     @Args('input') updateProfileInput: UpdateProfileInput,
   ): Promise<UpdateProfileOutput> {
-    return this.userService.updateProfile(authUser, updateProfileInput);
+    return this.userService.updateProfile(authUser.id, updateProfileInput);
   }
 
   @Mutation((returns) => DeleteUserOutput)
@@ -64,5 +57,12 @@ export class UserResolver {
     @Args('input') deleteUserInput: DeleteUserInput,
   ): Promise<DeleteUserOutput> {
     return this.userService.deleteUser(authUser, deleteUserInput);
+  }
+
+  @Mutation((returns) => VerifyEmailOutput)
+  verifyEmail(
+    @Args('input') verifyEmailInput: VerifyEmailInput,
+  ): Promise<VerifyEmailOutput> {
+    return this.userService.verifyEmail(verifyEmailInput);
   }
 }

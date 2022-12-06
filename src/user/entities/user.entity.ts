@@ -59,6 +59,10 @@ export class User extends CoreEntity {
   @IsEnum(UserRole)
   role: UserRole;
 
+  @Column({ default: false })
+  @Field((type) => Boolean)
+  verified: boolean;
+
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword(): Promise<void> {
@@ -77,7 +81,9 @@ export class User extends CoreEntity {
   async hashEmail(): Promise<void> {
     if (this.email) {
       try {
-        this.email = await bcrypt.hash(this.email, 10);
+        this.email = bcrypt
+          .hashSync(this.email, process.env.SALT)
+          .replace(process.env.SALT, '');
         console.log(this.email);
       } catch (err) {
         console.log(err);
