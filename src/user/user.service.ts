@@ -1,3 +1,4 @@
+import { MailService } from './../mail/mail.service';
 import { Verification } from './entities/verification.entity';
 import { DeleteUserOutput, DeleteUserInput } from './dtos/delete-user.dto';
 import {
@@ -13,7 +14,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email.dto';
-import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UserService {
   constructor(
@@ -21,6 +21,7 @@ export class UserService {
     private readonly jwtService: JwtService,
     @InjectRepository(Verification)
     private readonly verifications: Repository<Verification>,
+    private readonly mailService: MailService,
   ) {}
 
   /** 회원가입 */
@@ -51,7 +52,10 @@ export class UserService {
       );
       console.log(user);
       // DB 저장
-      await this.verifications.save(this.verifications.create({ user }));
+      const verification = await this.verifications.save(
+        this.verifications.create({ user }),
+      );
+      this.mailService.sendVerificationEmail(email, verification.code);
       return {
         ok: true,
       };
@@ -150,7 +154,10 @@ export class UserService {
       if (email) {
         user.email = email;
         user.verified = false;
-        await this.verifications.save(this.verifications.create({ user }));
+        const verification = await this.verifications.save(
+          this.verifications.create({ user }),
+        );
+        this.mailService.sendVerificationEmail(email, verification.code);
       }
       if (updatePassword) {
         user.password = updatePassword;
