@@ -1,5 +1,5 @@
-import { JwtService } from './../../jwt/jwt.service';
-import { ConfigService } from '@nestjs/config';
+import { Comment } from './../../post/entities/comment.entity';
+import { Post } from './../../post/entities/post.entity';
 import { CoreEntity } from './../../common/entities/core.entity';
 import {
   Field,
@@ -7,7 +7,7 @@ import {
   ObjectType,
   registerEnumType,
 } from '@nestjs/graphql';
-import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
 import {
   IsEmail,
   IsEnum,
@@ -62,6 +62,20 @@ export class User extends CoreEntity {
   @Column({ default: false })
   @Field((type) => Boolean)
   verified: boolean;
+
+  @Column({ nullable: true })
+  @Field((type) => String, { nullable: true })
+  profileImg?: string;
+
+  @OneToMany((type) => Post, (post) => post.author, { nullable: true })
+  @Field((type) => [Post])
+  posts?: Post[];
+
+  @OneToMany((type) => Comment, (comment) => comment.author, {
+    nullable: true,
+  })
+  @Field((type) => [Comment], { nullable: true })
+  comments?: Comment[];
 
   @BeforeInsert()
   @BeforeUpdate()

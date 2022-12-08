@@ -1,3 +1,4 @@
+import { Post } from './post/entities/post.entity';
 import { Verification } from './user/entities/verification.entity';
 import {
   MiddlewareConsumer,
@@ -15,6 +16,8 @@ import { User } from './user/entities/user.entity';
 import { JwtModule } from './jwt/jwt.module';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { MailModule } from './mail/mail.module';
+import { PostModule } from './post/post.module';
+import { Comment } from './post/entities/comment.entity';
 
 @Module({
   imports: [
@@ -45,7 +48,7 @@ import { MailModule } from './mail/mail.module';
       database: process.env.DB_NAME,
       synchronize: process.env.NODE_ENV !== 'prod',
       logging: process.env.NODE_ENV !== 'prod',
-      entities: [User, Verification],
+      entities: [User, Verification, Post, Comment],
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -62,6 +65,7 @@ import { MailModule } from './mail/mail.module';
       fromEmail: process.env.MAILGUN_FROM_EMAIL,
     }),
     UserModule,
+    PostModule,
   ],
   controllers: [],
   providers: [],
