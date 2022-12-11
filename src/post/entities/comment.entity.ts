@@ -1,7 +1,8 @@
 import { User } from './../../user/entities/user.entity';
 import { CoreEntity } from './../../common/entities/core.entity';
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, ManyToOne, OneToMany, RelationId } from 'typeorm';
+import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
+import { Post } from './post.entity';
 
 @InputType('CommentInputType', { isAbstract: true })
 @ObjectType()
@@ -18,11 +19,7 @@ export class Comment extends CoreEntity {
   @Column()
   text: string;
 
-  @Field((type) => Comment)
-  @OneToMany((type) => Comment, (comment) => comment.children)
-  parent: Comment;
-
-  @Field((type) => [Comment])
-  @ManyToOne((type) => Comment, (comment) => comment.parent)
-  children?: Comment[];
+  @Field((type) => Post)
+  @ManyToOne((type) => Post, (post) => post.comments)
+  post: Post;
 }

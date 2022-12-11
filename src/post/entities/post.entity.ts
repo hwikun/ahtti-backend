@@ -14,6 +14,10 @@ export class Post extends CoreEntity {
   @IsString()
   title: string;
 
+  @Field((type) => String)
+  @Column()
+  content: string;
+
   @Field((type) => User)
   @ManyToOne((type) => User, (user) => user.posts, { onDelete: 'CASCADE' })
   author: User;
@@ -21,8 +25,8 @@ export class Post extends CoreEntity {
   @RelationId((post: Post) => post.author)
   authorId: number;
 
-  @Field((type) => Int, { defaultValue: 0 })
-  @Column()
+  @Field((type) => Int)
+  @Column({ default: 0 })
   @IsNumber()
   viewCount: number;
 
@@ -33,6 +37,5 @@ export class Post extends CoreEntity {
   })
   comments?: Comment[];
 
-  // TODO: Comments
   // TODO: Body or Content @Column({ type: 'json' })
 }
