@@ -67,15 +67,13 @@ export class User extends CoreEntity {
   @Field((type) => String, { nullable: true })
   profileImg?: string;
 
-  @OneToMany((type) => Post, (post) => post.author, { nullable: true })
+  @OneToMany((type) => Post, (post) => post.author)
   @Field((type) => [Post])
-  posts?: Post[];
+  posts: Post[];
 
-  @OneToMany((type) => Comment, (comment) => comment.author, {
-    nullable: true,
-  })
-  @Field((type) => [Comment], { nullable: true })
-  comments?: Comment[];
+  @OneToMany((type) => Comment, (comment) => comment.author)
+  @Field((type) => [Comment])
+  comments: Comment[];
 
   @BeforeInsert()
   @BeforeUpdate()

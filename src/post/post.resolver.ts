@@ -1,3 +1,7 @@
+import {
+  CreateCommentOutput,
+  CreateCommentInput,
+} from './dtos/create-comment.dto';
 import { SearchPostInput, SearchPostOutput } from './dtos/search-post.dto';
 import { DeletePostOutput, DeletePostInput } from './dtos/delete-post.dto';
 import { GetPostInput, GetPostOutput } from './dtos/get-post.dto';
@@ -59,11 +63,11 @@ export class PostResolver {
 export class CommentResolver {
   constructor(private readonly postService: PostService) {}
 
-  // @Mutation((returns) => CreateCommentOutput)
-  // createComment(
-  //   @AuthUser() author: User,
-  //   @Args('input') createCommentInput: CreateCommentInput,
-  // ) {
-  //   return this.postService.createComment(author.id, createCommentInput);
-  // }
+  @Mutation((returns) => CreateCommentOutput)
+  createComment(
+    @AuthUser() author: User,
+    @Args('input') createCommentInput: CreateCommentInput,
+  ): Promise<CreateCommentOutput> {
+    return this.postService.createComment(author, createCommentInput);
+  }
 }

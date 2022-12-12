@@ -1,7 +1,7 @@
 import { User } from './../../user/entities/user.entity';
 import { CoreEntity } from './../../common/entities/core.entity';
 import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
+import { Column, Entity, ManyToOne, RelationId, OneToMany } from 'typeorm';
 import { IsNumber, IsString } from 'class-validator';
 import { Comment } from './comment.entity';
 
@@ -9,33 +9,30 @@ import { Comment } from './comment.entity';
 @ObjectType()
 @Entity()
 export class Post extends CoreEntity {
-  @Field((type) => String)
   @Column()
+  @Field((type) => String)
   @IsString()
   title: string;
 
-  @Field((type) => String)
   @Column()
+  @Field((type) => String)
   content: string;
 
-  @Field((type) => User)
   @ManyToOne((type) => User, (user) => user.posts, { onDelete: 'CASCADE' })
+  @Field((type) => User)
   author: User;
 
   @RelationId((post: Post) => post.author)
   authorId: number;
 
-  @Field((type) => Int)
   @Column({ default: 0 })
+  @Field((type) => Int)
   @IsNumber()
   viewCount: number;
 
-  @Field((type) => [Comment], { nullable: true })
-  @ManyToOne((type) => Comment, (comment) => comment.text, {
-    nullable: true,
-    onDelete: 'CASCADE',
-  })
-  comments?: Comment[];
+  @OneToMany((type) => Comment, (comment) => comment.post)
+  @Field((type) => [Comment])
+  comments: Comment[];
 
   // TODO: Body or Content @Column({ type: 'json' })
 }

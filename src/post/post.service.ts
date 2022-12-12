@@ -1,3 +1,7 @@
+import {
+  CreateCommentInput,
+  CreateCommentOutput,
+} from './dtos/create-comment.dto';
 import { SearchPostOutput, SearchPostInput } from './dtos/search-post.dto';
 import { UpdatePostInput, UpdatePostOutput } from './dtos/update-post.dto';
 import { DeletePostInput, DeletePostOutput } from './dtos/delete-post.dto';
@@ -70,6 +74,7 @@ export class PostService {
         where: { id: postId },
         relations: ['comments', 'author'],
       });
+      console.log(post);
       if (!post) {
         throw new Error('not found post');
       }
@@ -167,4 +172,31 @@ export class PostService {
     }
   }
   /** 댓글 작성 함수 */
+  async createComment(
+    author: User,
+    { postId, text }: CreateCommentInput,
+  ): Promise<CreateCommentOutput> {
+    try {
+      const post = await this.posts.findOne({
+        where: { id: postId },
+      });
+      console.log(post);
+      if (!post) {
+        throw new Error('not found post');
+      }
+      const comment = await this.comments.save(
+        await this.comments.create({ text, post, author }),
+      );
+      console.log(comment);
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
 }

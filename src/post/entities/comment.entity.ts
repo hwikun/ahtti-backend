@@ -8,8 +8,11 @@ import { Post } from './post.entity';
 @ObjectType()
 @Entity()
 export class Comment extends CoreEntity {
-  @Field((type) => User, { nullable: true })
-  @ManyToOne((type) => User, (user) => user.comments)
+  @ManyToOne((type) => User, (user) => user.comments, {
+    onDelete: 'CASCADE',
+    eager: true,
+  })
+  @Field((type) => User)
   author: User;
 
   @RelationId((comment: Comment) => comment.author)
@@ -19,7 +22,10 @@ export class Comment extends CoreEntity {
   @Column()
   text: string;
 
+  @ManyToOne((type) => Post, (post) => post.comments, { onDelete: 'CASCADE' })
   @Field((type) => Post)
-  @ManyToOne((type) => Post, (post) => post.comments)
   post: Post;
+
+  @RelationId((comment: Comment) => comment.post)
+  postId: number;
 }
