@@ -1,3 +1,4 @@
+import { GetCommentInput, GetCommentOutput } from './dtos/get-comment.dto';
 import {
   CreateCommentOutput,
   CreateCommentInput,
@@ -17,6 +18,10 @@ import {
   UpdateCommentInput,
   UpdateCommentOutput,
 } from './dtos/update-comment.dto';
+import {
+  GetAllCommentsInput,
+  GetAllCommentsOutput,
+} from './dtos/get-comments.dto';
 
 @Resolver()
 export class PostResolver {
@@ -73,5 +78,27 @@ export class CommentResolver {
     @Args('input') createCommentInput: CreateCommentInput,
   ): Promise<CreateCommentOutput> {
     return this.postService.createComment(author, createCommentInput);
+  }
+
+  @Query((returns) => GetCommentOutput)
+  getComment(
+    @Args('input') getCommentInput: GetCommentInput,
+  ): Promise<GetCommentOutput> {
+    return this.postService.getComment(getCommentInput);
+  }
+
+  @Query((returns) => GetAllCommentsOutput)
+  getAllComments(
+    @Args('input') getCommentsInput: GetAllCommentsInput,
+  ): Promise<GetAllCommentsOutput> {
+    return this.postService.getAllComments(getCommentsInput);
+  }
+
+  @Mutation((returns) => UpdateCommentOutput)
+  updateComment(
+    @AuthUser() author: User,
+    @Args('input') updateCommentInput: UpdateCommentInput,
+  ): Promise<UpdateCommentOutput> {
+    return this.postService.updateComment(author, updateCommentInput);
   }
 }

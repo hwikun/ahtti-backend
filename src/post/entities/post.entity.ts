@@ -18,7 +18,10 @@ export class Post extends CoreEntity {
   @Field((type) => String)
   content: string;
 
-  @ManyToOne((type) => User, (user) => user.posts, { onDelete: 'CASCADE' })
+  @ManyToOne((type) => User, (user) => user.posts, {
+    onDelete: 'CASCADE',
+    eager: true,
+  })
   @Field((type) => User)
   author: User;
 
@@ -33,9 +36,10 @@ export class Post extends CoreEntity {
   @OneToMany((type) => Comment, (comment) => comment.post, {
     nullable: true,
     onDelete: 'CASCADE',
+    eager: true,
   })
   @Field((type) => [Comment], { nullable: true })
-  comments: Comment[];
+  comments?: Comment[];
 
   // TODO: Body or Content @Column({ type: 'json' })
 }

@@ -19,6 +19,11 @@ import {
   UpdateCommentOutput,
 } from './dtos/update-comment.dto';
 import { Comment } from './entities/comment.entity';
+import {
+  GetAllCommentsInput,
+  GetAllCommentsOutput,
+} from './dtos/get-comments.dto';
+import { GetCommentInput, GetCommentOutput } from './dtos/get-comment.dto';
 
 @Injectable()
 export class PostService {
@@ -77,13 +82,12 @@ export class PostService {
     try {
       const post = await this.posts.findOne({
         where: { id: postId },
-        relations: ['comments', 'author'],
       });
       console.log(post);
       if (!post) {
         throw new Error('not found post');
       }
-      await this.posts.save({ id: postId, viewCount: post.viewCount + 1 });
+      await this.posts.update(postId, { viewCount: post.viewCount + 1 });
       return {
         ok: true,
         post,
@@ -140,7 +144,7 @@ export class PostService {
       if (content) {
         post.content = content;
       }
-      await this.posts.save({ id: postId, title, content });
+      await this.posts.update(postId, { title, content });
       return {
         ok: true,
       };
@@ -183,9 +187,7 @@ export class PostService {
     { postId, text }: CreateCommentInput,
   ): Promise<CreateCommentOutput> {
     try {
-      const post = await this.posts.findOne({
-        where: { id: postId },
-      });
+      const post = await this.posts.findOneBy({ id: postId });
       if (!post) {
         throw new Error('not found post');
       }
@@ -212,5 +214,78 @@ export class PostService {
     }
   }
 
-  /** updateComment */
+  /** 댓글 전체 가져오기 */
+  async getAllComments({
+    postId,
+  }: GetAllCommentsInput): Promise<GetAllCommentsOutput> {
+    try {
+      const comments = await this.comments.find({
+        where: { post: { id: postId } },
+      });
+      if (!comments) {
+        throw new Error('This post has no comments');
+      }
+      return {
+        ok: true,
+        comments,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
+
+  /** 내가 쓴 댓글 가져오기 */
+  async getComment({
+    postId,
+    commentId,
+  }: GetCommentInput): Promise<GetCommentOutput> {
+    try {
+      const comment = await this.comments.findOne({
+        where: { post: { id: postId }, id: commentId },
+      });
+      if (!comment) {
+        throw new Error('Not found comment');
+      }
+      return {
+        ok: true,
+        comment,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
+
+  /** 댓글 업데이트 */
+  async updateComment(
+    author: User,
+    { postId, commentId, text }: UpdateCommentInput,
+  ): Promise<UpdateCommentOutput> {
+    try {
+      const { ok, error, comment } = await this.getComment({
+        postId,
+        commentId,
+      });
+      if (!ok) {
+        throw new Error(error);
+      }
+      if (comment.author.id !== author.id) {
+        throw new Error("You can't update the comment with you don't own");
+      }
+      this.comments.update(commentId, { text });
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
 }
