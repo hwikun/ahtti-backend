@@ -1,3 +1,7 @@
+import {
+  DeleteCommentInput,
+  DeleteCommentOutput,
+} from './dtos/delete-comment.dto';
 import { GetCommentInput, GetCommentOutput } from './dtos/get-comment.dto';
 import {
   CreateCommentOutput,
@@ -100,5 +104,13 @@ export class CommentResolver {
     @Args('input') updateCommentInput: UpdateCommentInput,
   ): Promise<UpdateCommentOutput> {
     return this.postService.updateComment(author, updateCommentInput);
+  }
+
+  @Mutation((returns) => DeleteCommentOutput)
+  deleteComment(
+    @AuthUser() author: User,
+    @Args('input') deleteCommentInput: DeleteCommentInput,
+  ): Promise<DeleteCommentOutput> {
+    return this.postService.deleteComment(author, deleteCommentInput);
   }
 }

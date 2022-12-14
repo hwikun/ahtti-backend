@@ -7,10 +7,6 @@ import { Comment } from '../entities/comment.entity';
 export class GetCommentInput {
   @Field((type) => Int)
   @IsInt()
-  postId: number;
-
-  @Field((type) => Int)
-  @IsInt()
   commentId: number;
 }
 

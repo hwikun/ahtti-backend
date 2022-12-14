@@ -24,6 +24,10 @@ import {
   GetAllCommentsOutput,
 } from './dtos/get-comments.dto';
 import { GetCommentInput, GetCommentOutput } from './dtos/get-comment.dto';
+import {
+  DeleteCommentInput,
+  DeleteCommentOutput,
+} from './dtos/delete-comment.dto';
 
 @Injectable()
 export class PostService {
@@ -219,9 +223,7 @@ export class PostService {
     postId,
   }: GetAllCommentsInput): Promise<GetAllCommentsOutput> {
     try {
-      const comments = await this.comments.find({
-        where: { post: { id: postId } },
-      });
+      const comments = await this.comments.findBy({ post: { id: postId } });
       if (!comments) {
         throw new Error('This post has no comments');
       }
@@ -238,14 +240,9 @@ export class PostService {
   }
 
   /** 내가 쓴 댓글 가져오기 */
-  async getComment({
-    postId,
-    commentId,
-  }: GetCommentInput): Promise<GetCommentOutput> {
+  async getComment({ commentId }: GetCommentInput): Promise<GetCommentOutput> {
     try {
-      const comment = await this.comments.findOne({
-        where: { post: { id: postId }, id: commentId },
-      });
+      const comment = await this.comments.findOneBy({ id: commentId });
       if (!comment) {
         throw new Error('Not found comment');
       }
@@ -261,23 +258,52 @@ export class PostService {
     }
   }
 
-  /** 댓글 업데이트 */
-  async updateComment(
-    author: User,
-    { postId, commentId, text }: UpdateCommentInput,
-  ): Promise<UpdateCommentOutput> {
+  /** 댓글 작성자 체크 함수 */
+  async checkCommentAuthor(authorId: number, commentId: number) {
     try {
-      const { ok, error, comment } = await this.getComment({
-        postId,
-        commentId,
-      });
+      const { ok, error, comment } = await this.getComment({ commentId });
       if (!ok) {
         throw new Error(error);
       }
-      if (comment.author.id !== author.id) {
+      if (comment.author.id !== authorId) {
         throw new Error("You can't update the comment with you don't own");
       }
-      this.comments.update(commentId, { text });
+      return comment;
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
+
+  /** 댓글 업데이트 */
+  async updateComment(
+    author: User,
+    { commentId, text }: UpdateCommentInput,
+  ): Promise<UpdateCommentOutput> {
+    try {
+      await this.checkCommentAuthor(author.id, commentId);
+      await this.comments.update(commentId, { text });
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
+
+  /** 댓글 삭제 함수 */
+  async deleteComment(
+    author: User,
+    { commentId }: DeleteCommentInput,
+  ): Promise<DeleteCommentOutput> {
+    try {
+      await this.checkCommentAuthor(author.id, commentId);
+      await this.comments.delete(commentId);
       return {
         ok: true,
       };
