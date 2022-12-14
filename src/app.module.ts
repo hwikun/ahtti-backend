@@ -18,6 +18,7 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
 import { MailModule } from './mail/mail.module';
 import { PostModule } from './post/post.module';
 import { Comment } from './post/entities/comment.entity';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { Comment } from './post/entities/comment.entity';
     }),
     UserModule,
     PostModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

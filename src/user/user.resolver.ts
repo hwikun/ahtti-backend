@@ -13,6 +13,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { AuthUser } from 'src/auth/auth.decorator';
 import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email.dto';
+import { Role } from 'src/auth/role.decorator';
 
 @Resolver()
 export class UserResolver {
@@ -37,6 +38,7 @@ export class UserResolver {
   }
 
   @Query((returns) => UserProfileOutput)
+  @Role(['Any'])
   userProfile(
     @Args() userProfileInput: UserProfileInput,
   ): Promise<UserProfileOutput> {
@@ -44,6 +46,7 @@ export class UserResolver {
   }
 
   @Mutation((returns) => UpdateProfileOutput)
+  @Role(['Any'])
   updateProfile(
     @AuthUser() authUser: User,
     @Args('input') updateProfileInput: UpdateProfileInput,
@@ -52,6 +55,7 @@ export class UserResolver {
   }
 
   @Mutation((returns) => DeleteUserOutput)
+  @Role(['Any'])
   deleteUser(
     @AuthUser() authUser: User,
     @Args('input') deleteUserInput: DeleteUserInput,

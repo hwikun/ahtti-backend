@@ -26,12 +26,14 @@ import {
   GetAllCommentsInput,
   GetAllCommentsOutput,
 } from './dtos/get-comments.dto';
+import { Role } from 'src/auth/role.decorator';
 
 @Resolver()
 export class PostResolver {
   constructor(private readonly postService: PostService) {}
 
   @Mutation((returns) => CreatePostOutput)
+  @Role(['Any'])
   createPost(
     @AuthUser() author: User,
     @Args('input') createPostInput: CreatePostInput,
@@ -45,11 +47,13 @@ export class PostResolver {
   }
 
   @Query((returns) => GetPostOutput)
+  @Role(['Any'])
   getPost(@Args() { postId }: GetPostInput): Promise<GetPostOutput> {
     return this.postService.getPost(postId);
   }
 
   @Mutation((returns) => DeletePostOutput)
+  @Role(['Any'])
   deletePost(
     @AuthUser() author: User,
     @Args('input') deletePostInput: DeletePostInput,
@@ -58,6 +62,7 @@ export class PostResolver {
   }
 
   @Mutation((returns) => UpdatePostOutput)
+  @Role(['Any'])
   updatePost(
     @AuthUser() author: User,
     @Args('input') updatePostInput: UpdatePostInput,
@@ -77,6 +82,7 @@ export class CommentResolver {
   constructor(private readonly postService: PostService) {}
 
   @Mutation((returns) => CreateCommentOutput)
+  @Role(['Any'])
   createComment(
     @AuthUser() author: User,
     @Args('input') createCommentInput: CreateCommentInput,
@@ -85,6 +91,7 @@ export class CommentResolver {
   }
 
   @Query((returns) => GetCommentOutput)
+  @Role(['Any'])
   getComment(
     @Args('input') getCommentInput: GetCommentInput,
   ): Promise<GetCommentOutput> {
@@ -92,6 +99,7 @@ export class CommentResolver {
   }
 
   @Query((returns) => GetAllCommentsOutput)
+  @Role(['Any'])
   getAllComments(
     @Args('input') getCommentsInput: GetAllCommentsInput,
   ): Promise<GetAllCommentsOutput> {
@@ -99,6 +107,7 @@ export class CommentResolver {
   }
 
   @Mutation((returns) => UpdateCommentOutput)
+  @Role(['Any'])
   updateComment(
     @AuthUser() author: User,
     @Args('input') updateCommentInput: UpdateCommentInput,
@@ -107,6 +116,7 @@ export class CommentResolver {
   }
 
   @Mutation((returns) => DeleteCommentOutput)
+  @Role(['Any'])
   deleteComment(
     @AuthUser() author: User,
     @Args('input') deleteCommentInput: DeleteCommentInput,
