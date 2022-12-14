@@ -1,4 +1,3 @@
-import { Comment } from './../../post/entities/comment.entity';
 import { Post } from './../../post/entities/post.entity';
 import { CoreEntity } from './../../common/entities/core.entity';
 import {
@@ -70,10 +69,6 @@ export class User extends CoreEntity {
   @OneToMany((type) => Post, (post) => post.author)
   @Field((type) => [Post])
   posts: Post[];
-
-  @OneToMany((type) => Comment, (comment) => comment.author)
-  @Field((type) => [Comment])
-  comments: Comment[];
 
   @BeforeInsert()
   @BeforeUpdate()

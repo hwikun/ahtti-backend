@@ -13,6 +13,10 @@ import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { AuthUser } from 'src/auth/auth.decorator';
 import { Query } from '@nestjs/graphql';
 import { UpdatePostInput, UpdatePostOutput } from './dtos/update-post.dto';
+import {
+  UpdateCommentInput,
+  UpdateCommentOutput,
+} from './dtos/update-comment.dto';
 
 @Resolver()
 export class PostResolver {

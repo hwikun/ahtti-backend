@@ -30,8 +30,11 @@ export class Post extends CoreEntity {
   @IsNumber()
   viewCount: number;
 
-  @OneToMany((type) => Comment, (comment) => comment.post)
-  @Field((type) => [Comment])
+  @OneToMany((type) => Comment, (comment) => comment.post, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  @Field((type) => [Comment], { nullable: true })
   comments: Comment[];
 
   // TODO: Body or Content @Column({ type: 'json' })

@@ -13,6 +13,11 @@ import { Post } from './entities/post.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
+
+import {
+  UpdateCommentInput,
+  UpdateCommentOutput,
+} from './dtos/update-comment.dto';
 import { Comment } from './entities/comment.entity';
 
 @Injectable()
@@ -171,6 +176,7 @@ export class PostService {
       };
     }
   }
+
   /** 댓글 작성 함수 */
   async createComment(
     author: User,
@@ -180,15 +186,21 @@ export class PostService {
       const post = await this.posts.findOne({
         where: { id: postId },
       });
-      console.log(post);
       if (!post) {
         throw new Error('not found post');
       }
-      const comment = await this.comments.save(
-        await this.comments.create({ text, post, author }),
+      const { id, username, profileImg } = author;
+      await this.comments.save(
+        await this.comments.create({
+          post,
+          text,
+          author: {
+            id,
+            username,
+            profileImg,
+          },
+        }),
       );
-      console.log(comment);
-
       return {
         ok: true,
       };
@@ -199,4 +211,6 @@ export class PostService {
       };
     }
   }
+
+  /** updateComment */
 }
