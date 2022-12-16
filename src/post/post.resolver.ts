@@ -69,11 +69,44 @@ export class PostResolver {
   ): Promise<UpdatePostOutput> {
     return this.postService.updatePost(author, updatePostInput);
   }
+
   @Query((returns) => SearchPostOutput)
   searchPost(
     @Args('input') searchPostInput: SearchPostInput,
   ): Promise<SearchPostOutput> {
     return this.postService.searchPost(searchPostInput);
+  }
+}
+
+@Resolver()
+export class NoticeResolver {
+  constructor(private readonly postService: PostService) {}
+
+  @Mutation((returns) => CreatePostOutput)
+  @Role(['Admin'])
+  createPost(
+    @AuthUser() author: User,
+    @Args('input') createPostInput: CreatePostInput,
+  ): Promise<CreatePostOutput> {
+    return this.postService.createPost(author, createPostInput);
+  }
+
+  @Mutation((returns) => DeletePostOutput)
+  @Role(['Admin'])
+  deletePost(
+    @AuthUser() author: User,
+    @Args('input') deletePostInput: DeletePostInput,
+  ): Promise<DeletePostOutput> {
+    return this.postService.deletePost(author, deletePostInput);
+  }
+
+  @Mutation((returns) => UpdatePostOutput)
+  @Role(['Admin'])
+  updatePost(
+    @AuthUser() author: User,
+    @Args('input') updatePostInput: UpdatePostInput,
+  ): Promise<UpdatePostOutput> {
+    return this.postService.updatePost(author, updatePostInput);
   }
 }
 
