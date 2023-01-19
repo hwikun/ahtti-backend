@@ -84,7 +84,7 @@ export class NoticeResolver {
 
   @Mutation((returns) => CreatePostOutput)
   @Role(['Admin'])
-  createPost(
+  createNotice(
     @AuthUser() author: User,
     @Args('input') createPostInput: CreatePostInput,
   ): Promise<CreatePostOutput> {
@@ -93,7 +93,7 @@ export class NoticeResolver {
 
   @Mutation((returns) => DeletePostOutput)
   @Role(['Admin'])
-  deletePost(
+  deleteNotice(
     @AuthUser() author: User,
     @Args('input') deletePostInput: DeletePostInput,
   ): Promise<DeletePostOutput> {
@@ -102,7 +102,7 @@ export class NoticeResolver {
 
   @Mutation((returns) => UpdatePostOutput)
   @Role(['Admin'])
-  updatePost(
+  updateNotice(
     @AuthUser() author: User,
     @Args('input') updatePostInput: UpdatePostInput,
   ): Promise<UpdatePostOutput> {

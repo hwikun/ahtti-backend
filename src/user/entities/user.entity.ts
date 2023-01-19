@@ -3,6 +3,7 @@ import { CoreEntity } from './../../common/entities/core.entity';
 import {
   Field,
   InputType,
+  Int,
   ObjectType,
   registerEnumType,
 } from '@nestjs/graphql';
@@ -10,6 +11,7 @@ import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
 import {
   IsEmail,
   IsEnum,
+  IsInt,
   IsString,
   Matches,
   MaxLength,
@@ -23,7 +25,13 @@ export enum UserRole {
   Member = 'Member',
 }
 
+export enum Gender {
+  Male = 'Male',
+  Female = 'Female',
+}
+
 registerEnumType(UserRole, { name: 'UserRole' });
+registerEnumType(Gender, { name: 'Gender' });
 
 @InputType('UserInputType', { isAbstract: true })
 @ObjectType()
@@ -58,13 +66,30 @@ export class User extends CoreEntity {
   @IsEnum(UserRole)
   role: UserRole;
 
-  @Column({ default: false })
-  @Field((type) => Boolean)
-  verified: boolean;
-
   @Column({ nullable: true })
   @Field((type) => String, { nullable: true })
   profileImg?: string;
+
+  @Column({ type: 'enum', enum: Gender, nullable: true })
+  @Field((type) => Gender, { nullable: true })
+  @IsEnum(Gender)
+  gender?: Gender;
+
+  @Column({ nullable: true })
+  @Field((type) => String, { nullable: true })
+  @IsString()
+  nationality?: string;
+
+  @Column({ default: 0 })
+  @Field((type) => Int)
+  @IsInt()
+  coin: number;
+
+  // social login
+
+  @Column({ default: false })
+  @Field((type) => Boolean)
+  verified: boolean;
 
   @OneToMany((type) => Post, (post) => post.author)
   @Field((type) => [Post])

@@ -86,12 +86,12 @@ export class PostService {
     try {
       const post = await this.posts.findOne({
         where: { id: postId },
+        relations: ['author', 'comments'],
       });
-      console.log(post);
       if (!post) {
         throw new Error('not found post');
       }
-      await this.posts.update(postId, { viewCount: post.viewCount + 1 });
+      // await this.posts.update(postId, { viewCount: post.viewCount + 1 });
       return {
         ok: true,
         post,
@@ -168,6 +168,7 @@ export class PostService {
     try {
       const [posts, totalResults] = await this.posts.findAndCount({
         where: { title: ILike(`%${query}%`) },
+        relations: ['author', 'comments'],
         skip: (page - 1) * 25,
         take: 25,
       });
@@ -191,22 +192,25 @@ export class PostService {
     { postId, text }: CreateCommentInput,
   ): Promise<CreateCommentOutput> {
     try {
-      const post = await this.posts.findOneBy({ id: postId });
+      const { post } = await this.getPost(postId);
       if (!post) {
         throw new Error('not found post');
       }
       const { id, username, profileImg } = author;
-      await this.comments.save(
-        await this.comments.create({
-          post,
-          text,
-          author: {
-            id,
-            username,
-            profileImg,
-          },
-        }),
-      );
+
+      const comment = await this.comments.create({
+        postId,
+        author: {
+          id,
+          username,
+          profileImg,
+        },
+        text,
+      });
+      post.comments.push(comment);
+      await this.posts.save(post);
+
+      console.log(post);
       return {
         ok: true,
       };

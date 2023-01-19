@@ -2,7 +2,7 @@ import { User } from './../../user/entities/user.entity';
 import { CoreEntity } from './../../common/entities/core.entity';
 import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
 import { Column, Entity, ManyToOne, RelationId, OneToMany } from 'typeorm';
-import { IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { Comment } from './comment.entity';
 
 @InputType('PostInputType', { isAbstract: true })
@@ -20,7 +20,6 @@ export class Post extends CoreEntity {
 
   @ManyToOne((type) => User, (user) => user.posts, {
     onDelete: 'CASCADE',
-    eager: true,
   })
   @Field((type) => User)
   author: User;
@@ -35,11 +34,16 @@ export class Post extends CoreEntity {
 
   @OneToMany((type) => Comment, (comment) => comment.post, {
     nullable: true,
-    onDelete: 'CASCADE',
-    eager: true,
+    cascade: true,
   })
   @Field((type) => [Comment], { nullable: true })
   comments?: Comment[];
 
   // TODO: Body or Content @Column({ type: 'json' })
+
+  @Column('text', { nullable: true, array: true })
+  @Field((type) => [String], { nullable: true })
+  @IsString({ each: true })
+  @IsOptional()
+  postingImg?: string[];
 }
