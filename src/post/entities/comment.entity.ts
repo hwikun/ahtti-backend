@@ -33,7 +33,10 @@ export class Comment extends CoreEntity {
   author: Author;
 
   @Field((type) => Post)
-  @ManyToOne((type) => Post, (post) => post.comments)
+  @ManyToOne((type) => Post, (post) => post.comments, {
+    onDelete: 'CASCADE',
+    eager: true,
+  })
   post: Post;
 
   @RelationId((comment: Comment) => comment.post)
