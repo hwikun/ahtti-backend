@@ -8,7 +8,7 @@
 
 ### 사용기술
 
-Backend: Nest.JS
+Backend: Nest.JS & GraphQL & TypeORM
 Frontend: 미정
 DB: PostgreSQL
 
@@ -16,15 +16,17 @@ DB: PostgreSQL
 
 - [ ] User CRUD
 
-  - [ ] User Role: (비회원)회원 / 관리자
-  - [ ] Comments
+  - [x] User Role: (비회원)회원 / 관리자
+  - [x] Comments
   - [ ] Likes
   - [x] 로그인 정보 암호화
     - [x] email, username -> AES256
     - [x] password -> bcrypt
-  - [ ] 로그인 JWT 인증
+  - [x] 로그인 JWT 인증
+  - [ ] 팔로잉 팔로워 기능
+  
 
 - [ ] Post CRUD
-  - [ ] 회원만 글쓰기, 댓글, 라이크 가능
-  - [ ] 작성자만 수정 및 삭제가능
+  - [x] 회원만 글쓰기, 댓글, 라이크 가능
+  - [x] 작성자만 수정 및 삭제가능
   - [ ] subject, content, img, etc ...
